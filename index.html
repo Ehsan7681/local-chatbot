@@ -1,0 +1,139 @@
+<!DOCTYPE html>
+<html lang="fa" dir="rtl">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no">
+    <meta name="theme-color" content="#f5f7fa">
+    <title>چت بات محلی LM Studio</title>
+    <link rel="stylesheet" href="styles.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <div class="chat-header">
+                <h1>🤖 چت بات محلی</h1>
+                <div class="header-buttons">
+                    <div class="dark-mode-toggle" id="darkModeToggle" title="تغییر تم تیره/روشن">
+                        <i class="fas fa-moon"></i>
+                    </div>
+                    <div class="history-button" id="historyBtn">
+                        <i class="fas fa-history"></i>
+                    </div>
+                    <div class="help-button" id="helpBtn">
+                        <i class="fas fa-question-circle"></i>
+                    </div>
+                    <div class="settings-button" id="settingsBtn">
+                        <i class="fas fa-cog"></i>
+                    </div>
+                </div>
+            </div>
+            <div class="status-bar" id="statusBar">
+                <span id="connectionStatus">وضعیت اتصال: بررسی...</span>
+            </div>
+            <div class="chat-messages" id="chatMessages">
+                <!-- پیام‌های چت اینجا نمایش داده می‌شوند -->
+            </div>
+            <div class="chat-input-container">
+                <textarea id="userInput" placeholder="پیام خود را بنویسید..." rows="1"></textarea>
+                <button id="sendBtn"><i class="fas fa-paper-plane"></i></button>
+            </div>
+        </div>
+
+        <!-- پس‌زمینه تیره برای پاپ‌آپ‌ها -->
+        <div class="panel-overlay" id="panelOverlay"></div>
+
+        <div class="settings-panel" id="settingsPanel">
+            <div class="settings-header">
+                <h2>تنظیمات</h2>
+                <div class="close-button" id="closeSettingsBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="settings-content">
+                <div class="setting-group">
+                    <label for="apiUrl">آدرس API (LM Studio):</label>
+                    <input type="text" id="apiUrl" value="http://localhost:1234/v1/chat/completions">
+                </div>
+                <div class="setting-group">
+                    <label for="temperature">دمای پاسخ‌دهی:</label>
+                    <input type="range" id="temperature" min="0" max="1" step="0.1" value="0.7">
+                    <span id="temperatureValue">0.7</span>
+                </div>
+                <div class="setting-group">
+                    <label for="maxTokens">حداکثر توکن‌های پاسخ:</label>
+                    <input type="number" id="maxTokens" value="1024" min="10" max="4096">
+                </div>
+                <div class="setting-group">
+                    <div class="prompt-header">
+                        <label for="systemPrompt">پرامپت سیستم:</label>
+                        <button id="showPreviousPromptsBtn" class="small-btn" title="نمایش پرامپت‌های قبلی">
+                            <i class="fas fa-history"></i>
+                        </button>
+                    </div>
+                    <textarea id="systemPrompt" rows="3">شما یک دستیار مفید، خلاق و دقیق هستید.</textarea>
+                </div>
+                <button id="saveSettingsBtn" class="btn-save">ذخیره تنظیمات</button>
+                <button id="testConnectionBtn" class="btn-secondary">تست اتصال API</button>
+                <button id="clearHistoryBtn" class="btn-danger">پاک کردن تاریخچه چت</button>
+            </div>
+        </div>
+
+        <div class="help-panel" id="helpPanel">
+            <div class="settings-header">
+                <h2>راهنمای استفاده</h2>
+                <div class="close-button" id="closeHelpBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="settings-content">
+                <h3>تنظیم LM Studio</h3>
+                <div class="help-step">
+                    <p><strong>۱. راه‌اندازی LM Studio:</strong></p>
+                    <p>- LM Studio را باز کنید</p>
+                    <p>- یک مدل زبانی را انتخاب و بارگیری کنید</p>
+                </div>
+                <div class="help-step">
+                    <p><strong>۲. فعال کردن سرور محلی:</strong></p>
+                    <p>- روی گزینه <strong>Local Server</strong> در منوی اصلی کلیک کنید</p>
+                    <p>- دکمه <strong>Start Server</strong> را بزنید</p>
+                    <p>- مطمئن شوید که نشانگر وضعیت سرور <strong>سبز</strong> است</p>
+                </div>
+                <div class="help-step">
+                    <p><strong>۳. تنظیمات API:</strong></p>
+                    <p>- آدرس API باید به این شکل باشد:</p>
+                    <p dir="ltr" class="code">http://localhost:1234/v1/chat/completions</p>
+                    <p>- اگر از پورت دیگری استفاده می‌کنید، عدد را متناسباً تغییر دهید</p>
+                </div>
+                <div class="help-step">
+                    <p><strong>۴. رفع مشکلات رایج:</strong></p>
+                    <p>- اگر خطای اتصال دریافت می‌کنید، آدرس API را بررسی کنید</p>
+                    <p>- تنظیمات فایروال را بررسی کنید که اجازه ارتباط با پورت 1234 را می‌دهد</p>
+                    <p>- مطمئن شوید که LM Studio و سرور آن در حال اجراست</p>
+                    <p>- با کلیک روی "تست اتصال API" می‌توانید ارتباط را آزمایش کنید</p>
+                </div>
+                <div class="help-step">
+                    <p><strong>۵. برای دریافت اطلاعات فنی بیشتر:</strong></p>
+                    <p>- دکمه F12 را فشار دهید تا کنسول مرورگر باز شود</p>
+                    <p>- خطاها و پیام‌های مربوط به ارتباط با API را مشاهده کنید</p>
+                </div>
+                <button id="testConnectionFromHelp" class="btn-save">تست اتصال API</button>
+            </div>
+        </div>
+        
+        <!-- پنل تاریخچه گفتگوها -->
+        <div class="history-panel" id="historyPanel">
+            <div class="settings-header">
+                <h2>تاریخچه گفتگوها</h2>
+                <div class="close-button" id="closeHistoryBtn"><i class="fas fa-times"></i></div>
+            </div>
+            <div class="settings-content">
+                <button id="newChatBtn" class="btn-secondary">
+                    <i class="fas fa-plus"></i> گفتگوی جدید
+                </button>
+                <div class="history-list" id="historyList">
+                    <!-- چت‌های ذخیره شده اینجا قرار می‌گیرند -->
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script src="script.js"></script>
+</body>
+</html> 

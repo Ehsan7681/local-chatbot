@@ -1,0 +1,1209 @@
+@import url('https://fonts.googleapis.com/css2?family=Vazirmatn:wght@300;400;500;700&display=swap');
+
+:root {
+    --primary-color: rgba(255, 255, 255, 0.7);
+    --secondary-color: rgba(255, 255, 255, 0.4);
+    --accent-color: #e8d5b5;
+    --text-color: #333;
+    --shadow-color: rgba(31, 38, 135, 0.15);
+    --border-color: rgba(255, 255, 255, 0.4);
+    --danger-color: #f8d7da;
+    --danger-text: #721c24;
+    --success-color: #d4edda;
+    --success-text: #155724;
+    --info-color: #d1ecf1;
+    --info-text: #0c5460;
+    --secondary-btn-color: #e2e3e5;
+    --secondary-text: #383d41;
+    --background-color: linear-gradient(135deg, #f5f7fa, #e9e9e9);
+    --chat-bg-color: rgba(255, 255, 255, 0.7);
+}
+
+/* تعریف متغیرهای رنگ برای تم تیره */
+body.dark-mode {
+    --primary-color: rgba(40, 40, 40, 0.7);
+    --secondary-color: rgba(60, 60, 60, 0.4);
+    --accent-color: #4a8bdb;
+    --text-color: #e0e0e0;
+    --shadow-color: rgba(0, 0, 0, 0.5);
+    --border-color: rgba(80, 80, 80, 0.4);
+    --danger-color: #4a1a1a;
+    --danger-text: #ff5c5c;
+    --success-color: #1a4a1a;
+    --success-text: #5cff5c;
+    --info-color: #1a1a4a;
+    --info-text: #5c5cff;
+    --secondary-btn-color: #444;
+    --secondary-text: #e0e0e0;
+    --background-color: linear-gradient(135deg, #1a1a1a, #2c2c2c);
+    --chat-bg-color: rgba(40, 40, 40, 0.7);
+}
+
+* {
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
+    font-family: 'Vazirmatn', sans-serif;
+}
+
+html, body {
+    height: 100%;
+    width: 100%;
+    overflow: hidden;
+}
+
+body {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: var(--background-color);
+    padding: 0;
+    transition: background 0.3s ease;
+    color: var(--text-color);
+}
+
+.container {
+    position: relative;
+    width: 100%;
+    height: 100%;
+    max-width: 100%;
+    display: flex;
+    justify-content: center;
+}
+
+.chat-container {
+    width: 100%;
+    height: 100%;
+    max-width: 1200px;
+    margin: auto;
+    background: var(--chat-bg-color);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 0;
+    box-shadow: 0 8px 32px 0 var(--shadow-color);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    transition: all 0.3s ease;
+}
+
+@media (min-width: 768px) {
+    body {
+        padding: 20px;
+    }
+    
+    .container {
+        height: 95vh;
+    }
+    
+    .chat-container {
+        border-radius: 20px;
+        border: 1px solid var(--border-color);
+    }
+}
+
+.chat-header {
+    padding: 15px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: var(--primary-color);
+    border-bottom: 1px solid var(--border-color);
+}
+
+.chat-header h1 {
+    color: var(--text-color);
+    font-size: 1.5rem;
+    font-weight: 500;
+}
+
+.header-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.settings-button, .help-button, .history-button, .dark-mode-toggle {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.settings-button:hover, .help-button:hover, .history-button:hover, .dark-mode-toggle:hover {
+    background: var(--accent-color);
+    transform: scale(1.1);
+}
+
+.dark-mode-toggle i {
+    color: var(--text-color);
+    font-size: 1.2rem;
+}
+
+.status-bar {
+    padding: 5px 15px;
+    font-size: 0.85rem;
+    border: 1px solid var(--border-color);
+    background: var(--info-color);
+    color: var(--info-text);
+    display: inline-flex;
+    justify-content: center;
+    align-items: center;
+    width: auto;
+    max-width: 80%;
+    position: absolute;
+    top: 10px;
+    left: 50%;
+    transform: translateX(-50%);
+    z-index: 10;
+    border-radius: 20px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.1);
+}
+
+.status-bar.success {
+    background: var(--success-color);
+    color: var(--success-text);
+}
+
+.status-bar.error {
+    background: var(--danger-color);
+    color: var(--danger-text);
+}
+
+/* استایل برای نوار وضعیت در حالت استریمینگ */
+.status-bar.streaming {
+    background-color: #feffdc;
+    border-color: #e6e68e;
+    animation: pulse 2s infinite;
+    padding-left: 25px;
+    position: relative;
+}
+
+/* افزودن نشانگر وضعیت استریمینگ */
+.status-bar.streaming::before {
+    content: "";
+    position: absolute;
+    left: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background-color: #e6e68e;
+    animation: blink 1s infinite;
+}
+
+/* انیمیشن چشمک زدن برای نشانگر */
+@keyframes blink {
+    0%, 100% { opacity: 0.5; }
+    50% { opacity: 1; }
+}
+
+/* انیمیشن نبض برای وضعیت استریمینگ */
+@keyframes pulse {
+    0% {
+        opacity: 0.8;
+    }
+    50% {
+        opacity: 1;
+    }
+    100% {
+        opacity: 0.8;
+    }
+}
+
+/* در حالت تاریک */
+body.dark-mode .status-bar.streaming {
+    background-color: #3a3a1c;
+    border-color: #666633;
+}
+
+body.dark-mode .status-bar.streaming::before {
+    background-color: #bbb830;
+}
+
+.chat-messages {
+    flex: 1;
+    overflow-y: auto;
+    padding: 20px;
+    scroll-behavior: smooth;
+}
+
+.message {
+    display: flex;
+    margin-bottom: 20px;
+    animation: fadeIn 0.3s ease;
+    position: relative;
+    flex-wrap: wrap;
+}
+
+.bot-message {
+    flex-direction: row;
+}
+
+.user-message {
+    flex-direction: row-reverse;
+}
+
+.avatar {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    margin: 0 10px;
+    flex-shrink: 0;
+}
+
+.bot-message .avatar {
+    background: var(--accent-color);
+    color: var(--text-color);
+    order: 0;
+}
+
+.user-message .avatar {
+    background: var(--secondary-color);
+    color: var(--text-color);
+    order: 3;
+}
+
+.message-content {
+    max-width: 90%;
+    width: auto;
+    display: inline-block;
+    padding: 15px;
+    border-radius: 18px;
+    background: var(--secondary-color);
+    box-shadow: 0 4px 15px 0 var(--shadow-color);
+    line-height: 1.5;
+    white-space: pre-wrap;
+    word-break: break-word;
+    order: 1;
+    color: var(--text-color);
+}
+
+/* استایل بلوک کد */
+.code-block {
+    background: rgba(0, 0, 0, 0.8);
+    border-radius: 8px;
+    margin: 10px 0;
+    position: relative;
+    font-family: monospace;
+    direction: ltr;
+    overflow: hidden;
+}
+
+.code-block-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background: rgba(0, 0, 0, 0.9);
+    padding: 8px 12px;
+    border-top-left-radius: 8px;
+    border-top-right-radius: 8px;
+    color: #fff;
+    font-size: 0.9rem;
+}
+
+.code-block-language {
+    font-weight: bold;
+    color: #64d3ff;
+}
+
+.code-block-copy {
+    background: transparent;
+    border: none;
+    color: #fff;
+    cursor: pointer;
+    font-size: 0.9rem;
+    padding: 4px 8px;
+    border-radius: 4px;
+    transition: background 0.2s;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.code-block-copy:hover {
+    background: rgba(255, 255, 255, 0.1);
+}
+
+.code-block-copy i {
+    font-size: 1rem;
+}
+
+.code-block-content {
+    padding: 12px;
+    max-height: 400px;
+    overflow-y: auto;
+    overflow-x: auto;
+    color: #e4e4e4;
+    white-space: pre;
+    line-height: 1.5;
+    font-size: 0.9rem;
+}
+
+.code-block-content::-webkit-scrollbar {
+    height: 8px;
+    width: 8px;
+}
+
+.code-block-content::-webkit-scrollbar-thumb {
+    background: rgba(255, 255, 255, 0.2);
+    border-radius: 8px;
+}
+
+.code-block-content::-webkit-scrollbar-track {
+    background: rgba(0, 0, 0, 0.2);
+    border-radius: 8px;
+}
+
+body.dark-mode .code-block {
+    background: rgba(30, 30, 30, 0.95);
+}
+
+body.dark-mode .code-block-header {
+    background: rgba(20, 20, 20, 0.95);
+}
+
+.bot-message .message-content {
+    border-top-left-radius: 0;
+    background: var(--primary-color);
+    order: 1;
+}
+
+.user-message .message-content {
+    border-top-right-radius: 0;
+    background: var(--accent-color);
+    order: 2;
+}
+
+/* پیام خطا */
+.error-message .message-content {
+    background-color: var(--danger-color);
+    color: var(--danger-text);
+}
+
+.chat-input-container {
+    display: flex;
+    padding: 15px;
+    background: var(--primary-color);
+    border-top: 1px solid var(--border-color);
+}
+
+textarea {
+    flex: 1;
+    border: none;
+    outline: none;
+    padding: 15px;
+    border-radius: 25px;
+    resize: none;
+    background: var(--secondary-color);
+    color: var(--text-color);
+    font-size: 1rem;
+    margin-left: 10px;
+    max-height: 150px;
+    transition: all 0.3s ease;
+}
+
+button {
+    width: 50px;
+    height: 50px;
+    border-radius: 50%;
+    border: none;
+    background: var(--accent-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+button:hover {
+    transform: scale(1.05);
+}
+
+button:active {
+    transform: scale(0.95);
+}
+
+/* استایل‌های مشترک برای همه پنل‌ها (تنظیمات، راهنما، تاریخچه) */
+.settings-panel, .help-panel, .history-panel {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    width: 90%;
+    max-width: 680px;
+    max-height: 85vh;
+    background: rgba(255, 255, 255, 0.95);
+    backdrop-filter: blur(10px);
+    -webkit-backdrop-filter: blur(10px);
+    border-radius: 12px;
+    box-shadow: 0 4px 24px rgba(0, 0, 0, 0.2);
+    padding: 25px;
+    z-index: 1000;
+    display: none;
+    overflow: hidden;
+    flex-direction: column;
+}
+
+.settings-panel.show, .help-panel.show, .history-panel.show {
+    display: flex;
+}
+
+/* استایل هدر پنل‌ها */
+.settings-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 15px;
+    padding-bottom: 10px;
+    border-bottom: 1px solid var(--border-color);
+    flex-shrink: 0;
+}
+
+/* استایل محتوای قابل اسکرول پنل‌ها */
+.settings-content {
+    overflow-y: auto;
+    overflow-x: hidden;
+    max-height: calc(80vh - 70px); /* ارتفاع پنل منهای هدر و پدینگ */
+    flex: 1;
+    padding-right: 5px;
+}
+
+/* سایه پشت پنل‌ها وقتی باز هستند */
+.panel-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    background-color: rgba(0, 0, 0, 0.5);
+    z-index: 999;
+    display: none;
+}
+
+.panel-overlay.show {
+    display: block;
+}
+
+.close-button {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.close-button:hover {
+    background: var(--accent-color);
+}
+
+.setting-group {
+    margin-bottom: 20px;
+}
+
+label {
+    display: block;
+    margin-bottom: 8px;
+    color: var(--text-color);
+    font-weight: 500;
+}
+
+input[type="text"],
+input[type="number"],
+textarea {
+    width: 100%;
+    padding: 12px;
+    border-radius: 15px;
+    border: 1px solid var(--border-color);
+    background: var(--secondary-color);
+    color: var(--text-color);
+    font-size: 0.9rem;
+}
+
+input[type="range"] {
+    width: 80%;
+    margin-right: 10px;
+}
+
+#temperatureValue {
+    display: inline-block;
+    min-width: 30px;
+}
+
+.btn-save, .btn-secondary, .btn-danger {
+    width: 100%;
+    height: auto;
+    border-radius: 15px;
+    padding: 12px;
+    font-weight: 500;
+    margin-top: 10px;
+    text-align: center;
+}
+
+.btn-save {
+    background: var(--accent-color);
+    color: var(--text-color);
+    margin-top: 20px;
+}
+
+.btn-secondary {
+    background: var(--secondary-btn-color);
+    color: var(--secondary-text);
+}
+
+.btn-danger {
+    background: var(--danger-color);
+    color: var(--danger-text);
+}
+
+.help-step {
+    margin-bottom: 25px;
+    padding: 15px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 10px;
+    border: 1px solid var(--border-color);
+}
+
+.help-step p {
+    margin-bottom: 8px;
+}
+
+.help-step p:last-child {
+    margin-bottom: 0;
+}
+
+.help-step .code {
+    font-family: monospace;
+    background: rgba(0, 0, 0, 0.05);
+    padding: 5px 10px;
+    border-radius: 5px;
+    display: inline-block;
+    margin: 5px 0;
+}
+
+.help-panel h3 {
+    margin-bottom: 20px;
+    color: var(--text-color);
+}
+
+.typing-indicator {
+    display: flex;
+    padding: 15px;
+}
+
+.typing-indicator span {
+    width: 10px;
+    height: 10px;
+    margin: 0 2px;
+    background-color: var(--text-color);
+    border-radius: 50%;
+    display: inline-block;
+    opacity: 0.4;
+}
+
+.typing-indicator span:nth-child(1) {
+    animation: bounce 1s infinite 0.1s;
+}
+.typing-indicator span:nth-child(2) {
+    animation: bounce 1s infinite 0.3s;
+}
+.typing-indicator span:nth-child(3) {
+    animation: bounce 1s infinite 0.5s;
+}
+
+@keyframes bounce {
+    0%, 100% { transform: translateY(0); }
+    50% { transform: translateY(-5px); }
+}
+
+@keyframes fadeIn {
+    from { opacity: 0; transform: translateY(10px); }
+    to { opacity: 1; transform: translateY(0); }
+}
+
+/* Scrollbar Styling */
+::-webkit-scrollbar {
+    width: 8px;
+}
+
+::-webkit-scrollbar-track {
+    background: rgba(255, 255, 255, 0.1);
+    border-radius: 10px;
+}
+
+::-webkit-scrollbar-thumb {
+    background: var(--accent-color);
+    border-radius: 10px;
+}
+
+/* Responsive Design */
+@media (max-width: 768px) {
+    .message-content {
+        max-width: 85%;
+    }
+    
+    .chat-header h1 {
+        font-size: 1.2rem;
+    }
+    
+    .settings-button, .help-button {
+        width: 35px;
+        height: 35px;
+    }
+    
+    .chat-input-container {
+        padding: 10px;
+    }
+    
+    textarea {
+        padding: 12px;
+    }
+    
+    button {
+        width: 45px;
+        height: 45px;
+    }
+}
+
+.history-list {
+    margin-top: 20px;
+    max-height: calc(100% - 150px);
+    overflow-y: auto;
+}
+
+.history-item {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 10px 15px;
+    margin-bottom: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid var(--border-color);
+    border-radius: 10px;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.history-item:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.history-item.active {
+    background: var(--accent-color);
+}
+
+.history-item-content {
+    flex: 1;
+}
+
+.history-item-title {
+    font-weight: 500;
+    margin-bottom: 5px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.history-item-date {
+    font-size: 0.8rem;
+    color: #777;
+}
+
+.history-item-actions {
+    display: none;
+    gap: 5px;
+}
+
+.history-item:hover .history-item-actions {
+    display: flex;
+}
+
+.history-action-btn {
+    background: none;
+    border: none;
+    color: #777;
+    cursor: pointer;
+    width: 30px;
+    height: 30px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border-radius: 50%;
+    transition: all 0.2s;
+}
+
+.history-action-btn:hover {
+    background: rgba(255, 255, 255, 0.8);
+}
+
+.edit-btn:hover {
+    color: var(--text-color);
+}
+
+.delete-btn:hover {
+    color: var(--danger-text);
+}
+
+/* حذف مارجین‌های اضافی و برخی تنظیمات خاص که ممکن است تداخل ایجاد کنند */
+#chatContainer {
+    margin-top: 0;
+}
+
+#settingsPanel, #helpPanel {
+    top: 50%;
+}
+
+.history-button {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: var(--secondary-color);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    cursor: pointer;
+    transition: all 0.3s ease;
+}
+
+.history-button:hover {
+    background: var(--accent-color);
+}
+
+/* دکمه‌های عملیات پیام */
+.message-actions {
+    display: flex;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    gap: 5px;
+    align-items: center;
+    align-self: center;
+    position: relative;
+    margin: 0 5px;
+}
+
+.bot-message .message-actions {
+    order: 2;
+    margin-right: auto;
+}
+
+.user-message .message-actions {
+    order: 1;
+    margin-left: auto;
+}
+
+.message:hover .message-actions {
+    opacity: 1;
+}
+
+.action-btn {
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    border: none;
+    cursor: pointer;
+    font-size: 14px;
+    transition: all 0.2s;
+    background-color: rgba(255, 255, 255, 0.8);
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+}
+
+.edit-btn {
+    color: #3498db;
+}
+
+.delete-btn {
+    color: #e74c3c;
+}
+
+.action-btn:hover {
+    transform: scale(1.1);
+}
+
+/* دکمه تکرار پاسخ و شمارشگر */
+.regenerate-btn {
+    color: #3498db;
+}
+
+.regenerate-count {
+    display: inline-block;
+    min-width: 18px;
+    height: 18px;
+    line-height: 18px;
+    text-align: center;
+    background-color: #3498db;
+    color: white;
+    border-radius: 50%;
+    font-size: 11px;
+    margin-right: 2px;
+    margin-left: 2px;
+}
+
+.previous-answers-btn {
+    color: #8e44ad;
+}
+
+/* پنل نمایش پاسخ‌های قبلی */
+.previous-answers-panel {
+    z-index: 1010;
+    max-width: 680px;
+    max-height: 85vh;
+    padding: 25px;
+}
+
+.previous-answer-item {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.previous-answer-header {
+    display: flex;
+    justify-content: space-between;
+    margin-bottom: 10px;
+    padding-bottom: 5px;
+    border-bottom: 1px solid rgba(0, 0, 0, 0.1);
+}
+
+.previous-answer-number {
+    font-weight: bold;
+    color: #3498db;
+}
+
+.previous-answer-time {
+    color: #7f8c8d;
+    font-size: 0.9em;
+}
+
+.previous-answer-content {
+    margin-bottom: 15px;
+    max-height: 200px;
+    overflow-y: auto;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    white-space: pre-wrap;
+}
+
+.previous-answer-use {
+    width: 100%;
+    padding: 8px !important;
+    height: auto !important;
+    border-radius: 8px !important;
+}
+
+/* استایل اضافی برای دکمه‌های عملیات پیام‌ها */
+.message-actions {
+    display: flex;
+    opacity: 0;
+    transition: opacity 0.2s ease-in-out;
+    gap: 5px;
+    align-items: center;
+    align-self: center;
+    position: relative;
+    margin: 0 5px;
+}
+
+.bot-message .message-actions {
+    order: 2;
+    margin-right: auto;
+}
+
+.user-message .message-actions {
+    order: 1;
+    margin-left: auto;
+}
+
+.message:hover .message-actions {
+    opacity: 1;
+}
+
+/* استایل هدر پرامپت با دکمه نمایش پرامپت‌های قبلی */
+.prompt-header {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    margin-bottom: 8px;
+}
+
+.small-btn {
+    width: 30px;
+    height: 30px;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    cursor: pointer;
+    transition: all 0.3s ease;
+    border: none;
+    font-size: 14px;
+}
+
+.small-btn:hover {
+    background-color: var(--accent-color);
+    transform: scale(1.1);
+}
+
+/* استایل‌های پنل پرامپت‌های قبلی */
+.previous-prompts-panel {
+    z-index: 1010;
+    max-width: 680px;
+    max-height: 85vh;
+    padding: 25px;
+}
+
+.previous-prompt-item {
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 12px;
+    padding: 15px;
+    margin-bottom: 15px;
+    border: 1px solid var(--border-color);
+}
+
+.previous-prompt-number {
+    font-weight: bold;
+    color: #3498db;
+    margin-bottom: 8px;
+}
+
+.previous-prompt-content {
+    margin-bottom: 15px;
+    padding: 10px;
+    background: rgba(255, 255, 255, 0.5);
+    border-radius: 8px;
+    white-space: pre-wrap;
+    max-height: 150px;
+    overflow-y: auto;
+}
+
+.previous-prompt-buttons {
+    display: flex;
+    gap: 10px;
+}
+
+.previous-prompt-use {
+    flex: 3;
+    padding: 8px !important;
+    height: auto !important;
+    border-radius: 8px !important;
+}
+
+.previous-prompt-delete {
+    flex: 1;
+    padding: 8px !important;
+    height: auto !important;
+    border-radius: 8px !important;
+}
+
+/* استایل برای پیام خوش‌آمدگویی */
+.welcome-message {
+    text-align: center;
+    color: var(--text-color);
+    opacity: 0.7;
+    transition: opacity 0.3s, transform 0.3s;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 100%;
+    width: 100%;
+    position: absolute;
+    top: 0;
+    left: 0;
+    right: 0;
+    bottom: 0;
+    pointer-events: none;
+    z-index: 5;
+    margin: auto;
+}
+
+.welcome-message > div {
+    background-color: var(--chat-bg);
+    padding: 2rem;
+    border-radius: 1rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    max-width: 80%;
+    transform: translateY(-10%);
+    backdrop-filter: blur(5px);
+}
+
+.welcome-message.hidden {
+    opacity: 0;
+    transform: translateY(20px);
+    pointer-events: none;
+}
+
+.welcome-icon {
+    font-size: 3rem;
+    margin-bottom: 1rem;
+    color: var(--accent-color);
+}
+
+.welcome-message h2 {
+    margin-bottom: 1rem;
+    font-size: 1.5rem;
+}
+
+.welcome-message p {
+    margin-bottom: 0;
+    font-size: 1rem;
+}
+
+/* تم تیره برای پنل‌ها */
+body.dark-mode .settings-panel,
+body.dark-mode .help-panel,
+body.dark-mode .history-panel,
+body.dark-mode .previous-prompts-panel,
+body.dark-mode .previous-answers-panel {
+    background-color: var(--primary-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+    box-shadow: 0 0 15px 5px var(--shadow-color);
+}
+
+body.dark-mode .settings-header,
+body.dark-mode .settings-header h2,
+body.dark-mode .settings-header h3 {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .settings-content,
+body.dark-mode .setting-group,
+body.dark-mode .help-step {
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .setting-group label,
+body.dark-mode .setting-group span,
+body.dark-mode .help-step p,
+body.dark-mode .help-step strong,
+body.dark-mode .history-item-title,
+body.dark-mode .history-item-date {
+    color: var(--text-color);
+}
+
+body.dark-mode input[type="text"],
+body.dark-mode input[type="number"],
+body.dark-mode input[type="range"],
+body.dark-mode textarea,
+body.dark-mode select {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .code {
+    background-color: #333;
+    color: #eee;
+    border-color: var(--border-color);
+}
+
+body.dark-mode .previous-prompt-item,
+body.dark-mode .previous-answer-item {
+    background-color: var(--secondary-color);
+    color: var(--text-color);
+    border-color: var(--border-color);
+}
+
+body.dark-mode .previous-prompt-number,
+body.dark-mode .previous-answer-number,
+body.dark-mode .previous-prompt-content,
+body.dark-mode .previous-answer-content,
+body.dark-mode .previous-answer-time,
+body.dark-mode .previous-prompt-time {
+    color: var(--text-color);
+}
+
+body.dark-mode .btn-save,
+body.dark-mode .btn-secondary,
+body.dark-mode .btn-danger {
+    border-color: var(--border-color);
+}
+
+body.dark-mode .btn-save {
+    background-color: #2a5885;
+    color: white;
+}
+
+body.dark-mode .btn-secondary {
+    background-color: #444;
+    color: white;
+}
+
+body.dark-mode .btn-danger {
+    background-color: #8b2e2e;
+    color: white;
+}
+
+body.dark-mode .close-button {
+    color: var(--text-color);
+}
+
+/* استایل برای آمار پیام */
+.message-stats {
+    font-size: 0.75rem;
+    color: #999;
+    padding: 5px 15px;
+    text-align: left;
+    direction: rtl;
+    opacity: 0.7;
+    margin-top: 5px;
+    width: 100%;
+    order: 4;
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+    gap: 8px;
+    border-top: 1px dashed rgba(0, 0, 0, 0.1);
+    padding-top: 8px;
+}
+
+.user-message .message-stats {
+    text-align: right;
+    justify-content: flex-end;
+}
+
+.bot-message .message-stats {
+    text-align: left;
+    justify-content: flex-start;
+}
+
+.message-stats span {
+    display: inline-block;
+    background-color: rgba(0, 0, 0, 0.05);
+    padding: 2px 8px;
+    border-radius: 12px;
+    font-size: 0.7rem;
+}
+
+/* تغییر رنگ آمار پیام در حالت تاریک */
+body.dark-mode .message-stats {
+    color: #aaa;
+    border-top: 1px dashed rgba(255, 255, 255, 0.1);
+}
+
+body.dark-mode .message-stats span {
+    background-color: rgba(255, 255, 255, 0.1);
+}
