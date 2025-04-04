@@ -23,6 +23,7 @@ document.addEventListener('DOMContentLoaded', () => {
     const connectionStatus = document.getElementById('connectionStatus');
     const panelOverlay = document.getElementById('panelOverlay');
     const darkModeToggle = document.getElementById('darkModeToggle');
+    const scrollToBottomBtn = document.getElementById('scrollToBottomBtn');
     
     // مخفی کردن نوار وضعیت در ابتدا
     statusBar.style.display = 'none';
@@ -44,6 +45,36 @@ document.addEventListener('DOMContentLoaded', () => {
         content: ''
     };
     
+    // فانکشن کنترل دکمه رفتن به پایین
+    function toggleScrollToBottomButton() {
+        // محاسبه فاصله از پایین چت
+        const scrollPosition = chatMessages.scrollTop;
+        const scrollHeight = chatMessages.scrollHeight;
+        const clientHeight = chatMessages.clientHeight;
+        const scrolledToBottom = scrollHeight - scrollPosition - clientHeight <= 50; // با تلرانس 50 پیکسل
+        
+        // نمایش یا مخفی کردن دکمه
+        if (scrolledToBottom) {
+            scrollToBottomBtn.classList.remove('visible');
+        } else {
+            scrollToBottomBtn.classList.add('visible');
+        }
+    }
+    
+    // تابع رفتن به پایین چت
+    function scrollToBottom() {
+        chatMessages.scrollTo({
+            top: chatMessages.scrollHeight,
+            behavior: 'smooth'
+        });
+    }
+    
+    // اضافه کردن رویداد اسکرول به پنجره چت
+    chatMessages.addEventListener('scroll', toggleScrollToBottomButton);
+    
+    // رویداد کلیک برای دکمه رفتن به پایین
+    scrollToBottomBtn.addEventListener('click', scrollToBottom);
+    
     // ایجاد چت جدید اگر هیچ چتی وجود ندارد یا چت فعال نیست
     if (chatSessions.length === 0 || !activeChatId) {
         createNewChat();
@@ -61,7 +92,9 @@ document.addEventListener('DOMContentLoaded', () => {
         temperature: parseFloat(localStorage.getItem('temperature') || 0.7),
         maxTokens: parseInt(localStorage.getItem('maxTokens') || 1024),
         systemPrompt: localStorage.getItem('systemPrompt') || 'شما یک دستیار مفید، خلاق و دقیق هستید.',
-        darkMode: localStorage.getItem('darkMode') === 'true' // تنظیمات تم تیره
+        darkMode: localStorage.getItem('darkMode') === 'true', // تنظیمات تم تیره
+        useOpenRouter: localStorage.getItem('useOpenRouter') === 'true', // استفاده از OpenRouter
+        aiModel: localStorage.getItem('selectedAiModel') || '' // مدل انتخابی OpenRouter
     };
     
     // اعمال تم تیره اگر در تنظیمات فعال باشد
@@ -300,11 +333,24 @@ document.addEventListener('DOMContentLoaded', () => {
     
     // Load settings
     function loadSettings() {
+        // بارگذاری تنظیمات از localStorage
         document.getElementById('apiUrl').value = settings.apiUrl;
         temperatureSlider.value = settings.temperature;
         temperatureValue.textContent = settings.temperature;
         document.getElementById('maxTokens').value = settings.maxTokens;
         document.getElementById('systemPrompt').value = settings.systemPrompt;
+        
+        // اعمال تنظیمات نوع هوش مصنوعی
+        const useLocalAi = document.getElementById('useLocalAi');
+        const useOpenRouter = document.getElementById('useOpenRouter');
+        
+        if (useLocalAi && useOpenRouter) {
+            if (settings.useOpenRouter) {
+                useOpenRouter.checked = true;
+            } else {
+                useLocalAi.checked = true;
+            }
+        }
         
         // اضافه کردن چک باکس حالت تیره به پنل تنظیمات
         if (!document.getElementById('darkModeCheckbox')) {
@@ -337,10 +383,20 @@ document.addEventListener('DOMContentLoaded', () => {
     function saveSettings() {
         const newPrompt = document.getElementById('systemPrompt').value;
         
+        // ذخیره تنظیمات اصلی
         settings.apiUrl = document.getElementById('apiUrl').value;
         settings.temperature = parseFloat(temperatureSlider.value);
         settings.maxTokens = parseInt(document.getElementById('maxTokens').value);
         settings.systemPrompt = newPrompt;
+        
+        // ذخیره تنظیمات نوع هوش مصنوعی
+        const useLocalAi = document.getElementById('useLocalAi');
+        const useOpenRouter = document.getElementById('useOpenRouter');
+        
+        if (useLocalAi && useOpenRouter) {
+            settings.useOpenRouter = useOpenRouter.checked;
+            localStorage.setItem('useOpenRouter', settings.useOpenRouter);
+        }
         
         // ذخیره تنظیمات تم تیره - به‌روزرسانی نحوه اعمال تغییرات
         const darkModeCheckbox = document.getElementById('darkModeCheckbox');
@@ -359,6 +415,7 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         }
         
+        // ذخیره تنظیمات اصلی در localStorage
         localStorage.setItem('apiUrl', settings.apiUrl);
         localStorage.setItem('temperature', settings.temperature);
         localStorage.setItem('maxTokens', settings.maxTokens);
@@ -382,7 +439,9 @@ document.addEventListener('DOMContentLoaded', () => {
             panelOverlay.classList.remove('show');
             
             // بررسی اتصال با تنظیمات جدید
+            if (!settings.useOpenRouter) {
             checkLMStudioConnection();
+            }
         }, 100);
     }
     
@@ -576,7 +635,7 @@ document.addEventListener('DOMContentLoaded', () => {
         userInput.style.height = (userInput.scrollHeight) + 'px';
     }
     
-    // Load chat history to UI
+    // Function to load chat history to UI
     function loadChatHistoryToUI() {
         // پاک کردن همه پیام‌های فعلی
         chatMessages.innerHTML = '';
@@ -604,10 +663,8 @@ document.addEventListener('DOMContentLoaded', () => {
             hideWelcomeMessage();
         }
         
-        // حذف اسکرول خودکار به پایین صفحه
-        // setTimeout(() => {
-        //     chatMessages.scrollTop = chatMessages.scrollHeight;
-        // }, 100);
+        // بررسی وضعیت دکمه رفتن به پایین
+        toggleScrollToBottomButton();
     }
     
     // اضافه کردن پیام خوش‌آمدگویی
@@ -1037,7 +1094,10 @@ document.addEventListener('DOMContentLoaded', () => {
             updateConnectionStatus('در حال ارسال پیام به LM Studio...', false, false, false);
             
             // Add typing indicator
-            addTypingIndicator();
+            const typingIndicatorId = addTypingIndicator();
+            
+            // اسکرول به پایین پس از افزودن نشانگر تایپ
+            scrollToBottom();
             
             // Add user message to chat history
             chatHistory.push({ role: 'user', content: message });
@@ -1892,4 +1952,481 @@ document.addEventListener('DOMContentLoaded', () => {
             throw error;
         }
     }
+
+    // ماژول OpenRouter - مدیریت OpenRouter API
+    const OpenRouterModule = (function() {
+        // متغیرهای خصوصی
+        const OPENROUTER_API_ENDPOINT = 'https://openrouter.ai/api/v1/models';
+        const OPENROUTER_CHAT_ENDPOINT = 'https://openrouter.ai/api/v1/chat/completions';
+        
+        // فانکشن برای بررسی اعتبار کلید API
+        async function validateApiKey(apiKey) {
+            try {
+                const response = await fetch(OPENROUTER_API_ENDPOINT, {
+                    method: 'GET',
+                    headers: {
+                        'Authorization': `Bearer ${apiKey}`,
+                        'HTTP-Referer': window.location.origin,
+                        'User-Agent': 'LocalChatBot/1.0'
+                    }
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`خطا در تأیید اعتبار: ${response.status} ${response.statusText}`);
+                }
+                
+                const data = await response.json();
+                return { success: true, models: data.data || [] };
+            } catch (error) {
+                console.error('خطا در تأیید اعتبار کلید API:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // فانکشن برای دریافت لیست مدل‌ها
+        async function fetchModels(apiKey) {
+            try {
+                const validation = await validateApiKey(apiKey);
+                if (!validation.success) {
+                    return validation;
+                }
+                
+                // مرتب‌سازی مدل‌ها براساس ارائه‌دهنده
+                const sortedModels = validation.models.sort((a, b) => {
+                    // بررسی وجود خصوصیت context و organization برای جلوگیری از خطا
+                    const orgA = a.context && a.context.organization ? a.context.organization : '';
+                    const orgB = b.context && b.context.organization ? b.context.organization : '';
+                    
+                    if (orgA === orgB) {
+                        return a.name.localeCompare(b.name);
+                    }
+                    return orgA.localeCompare(orgB);
+                });
+                
+                return { success: true, models: sortedModels };
+            } catch (error) {
+                console.error('خطا در دریافت مدل‌ها:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // فانکشن برای ارسال پیام به OpenRouter
+        async function sendMessageToOpenRouter(messages, model, apiKey, temperature, maxTokens) {
+            try {
+                const response = await fetch(OPENROUTER_CHAT_ENDPOINT, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                        'Authorization': `Bearer ${apiKey}`,
+                        'HTTP-Referer': window.location.origin,
+                        'User-Agent': 'LocalChatBot/1.0',
+                        'X-Title': 'Local Chat Bot'
+                    },
+                    body: JSON.stringify({
+                        model: model,
+                        messages: messages,
+                        temperature: parseFloat(temperature),
+                        max_tokens: parseInt(maxTokens),
+                        stream: true
+                    })
+                });
+                
+                if (!response.ok) {
+                    throw new Error(`خطا در ارسال پیام: ${response.status} ${response.statusText}`);
+                }
+                
+                return {
+                    success: true,
+                    stream: response.body
+                };
+            } catch (error) {
+                console.error('خطا در ارسال پیام به OpenRouter:', error);
+                return { success: false, error: error.message };
+            }
+        }
+        
+        // بازگرداندن API عمومی
+        return {
+            validateApiKey,
+            fetchModels,
+            sendMessageToOpenRouter
+        };
+    })();
+
+    // راه‌اندازی ویژگی OpenRouter
+    function setupOpenRouterFeature() {
+        const openRouterApiKeyInput = document.getElementById('openRouterApiKey');
+        const validateApiKeyBtn = document.getElementById('validateApiKeyBtn');
+        const modelSelectionGroup = document.getElementById('modelSelectionGroup');
+        const aiModelSelect = document.getElementById('aiModel');
+        
+        // بررسی وجود کلید API ذخیره شده
+        const savedApiKey = localStorage.getItem('openRouterApiKey');
+        if (savedApiKey) {
+            openRouterApiKeyInput.value = savedApiKey;
+            // بارگذاری مدل‌ها اگر کلید موجود باشد
+            loadOpenRouterModels(savedApiKey);
+        }
+        
+        // بارگذاری مدل انتخاب شده قبلی
+        const savedModel = localStorage.getItem('selectedAiModel');
+        if (savedModel) {
+            settings.aiModel = savedModel;
+        }
+        
+        // رویداد کلیک برای تأیید اعتبار کلید API
+        validateApiKeyBtn.addEventListener('click', async function() {
+            const apiKey = openRouterApiKeyInput.value.trim();
+            if (!apiKey) {
+                updateConnectionStatus('لطفاً کلید API را وارد کنید', false, true);
+                return;
+            }
+            
+            updateConnectionStatus('در حال تأیید اعتبار کلید API...', false, false);
+            
+            const result = await OpenRouterModule.validateApiKey(apiKey);
+            if (result.success) {
+                updateConnectionStatus('کلید API معتبر است', true, false);
+                
+                // بارگذاری مدل‌ها
+                await loadOpenRouterModels(apiKey);
+                
+                // ذخیره کلید API
+                localStorage.setItem('openRouterApiKey', apiKey);
+            } else {
+                updateConnectionStatus(`خطا در تأیید اعتبار: ${result.error}`, false, true);
+            }
+        });
+        
+        // رویداد تغییر مدل
+        aiModelSelect.addEventListener('change', function() {
+            const selectedModel = this.value;
+            if (selectedModel) {
+                settings.aiModel = selectedModel;
+                settings.useOpenRouter = true;
+                localStorage.setItem('selectedAiModel', selectedModel);
+                localStorage.setItem('useOpenRouter', 'true');
+                updateConnectionStatus(`مدل ${selectedModel} انتخاب شد`, true, false);
+            } else {
+                settings.useOpenRouter = false;
+                localStorage.removeItem('selectedAiModel');
+                localStorage.setItem('useOpenRouter', 'false');
+            }
+        });
+    }
+    
+    // بارگذاری مدل‌های OpenRouter
+    async function loadOpenRouterModels(apiKey) {
+        const modelSelectionGroup = document.getElementById('modelSelectionGroup');
+        const aiModelSelect = document.getElementById('aiModel');
+        
+        const result = await OpenRouterModule.fetchModels(apiKey);
+        if (result.success) {
+            // پاک کردن گزینه‌های قبلی
+            aiModelSelect.innerHTML = '<option value="">انتخاب مدل...</option>';
+            
+            let currentProvider = '';
+            result.models.forEach(model => {
+                // استخراج نام سازمان با بررسی وجود خصوصیت context
+                const organization = model.context && model.context.organization ? model.context.organization : 'سایر مدل‌ها';
+                
+                // اضافه کردن گروه‌بندی برای ارائه‌دهندگان مختلف
+                if (organization !== currentProvider) {
+                    const optgroup = document.createElement('optgroup');
+                    optgroup.label = organization;
+                    aiModelSelect.appendChild(optgroup);
+                    currentProvider = organization;
+                }
+                
+                // اضافه کردن مدل به آخرین گروه
+                const option = document.createElement('option');
+                option.value = model.id;
+                option.textContent = model.name;
+                aiModelSelect.lastChild.appendChild(option);
+            });
+            
+            // انتخاب مدل قبلی اگر وجود داشته باشد
+            const savedModel = localStorage.getItem('selectedAiModel');
+            if (savedModel) {
+                aiModelSelect.value = savedModel;
+            }
+            
+            // نمایش بخش انتخاب مدل
+            modelSelectionGroup.style.display = 'block';
+        } else {
+            updateConnectionStatus(`خطا در بارگذاری مدل‌ها: ${result.error}`, false, true);
+            modelSelectionGroup.style.display = 'none';
+        }
+    }
+    
+    // اصلاح تابع sendMessage برای پشتیبانی از OpenRouter
+    const originalSendMessage = sendMessage;
+    sendMessage = async function(message) {
+        // بررسی استفاده از OpenRouter
+        if (settings.useOpenRouter && settings.aiModel) {
+            const openRouterApiKey = localStorage.getItem('openRouterApiKey');
+            if (!openRouterApiKey) {
+                updateConnectionStatus('کلید API OpenRouter موجود نیست', false, true);
+                return;
+            }
+            
+            try {
+                updateConnectionStatus('در حال ارسال پیام به OpenRouter...', false, false, true);
+                
+                // ایجاد پیام‌ها
+                const allMessages = [];
+                
+                // افزودن پیام سیستم اگر وجود داشته باشد
+                if (settings.systemPrompt) {
+                    allMessages.push({
+                        role: 'system',
+                        content: settings.systemPrompt
+                    });
+                }
+                
+                // افزودن تاریخچه چت
+                chatHistory.forEach(msg => {
+                    allMessages.push({
+                        role: msg.role,
+                        content: msg.content
+                    });
+                });
+                
+                // افزودن پیام جدید
+                allMessages.push({
+                    role: 'user',
+                    content: message
+                });
+                
+                const startTime = new Date();
+                const emptyMessageId = addEmptyMessage('assistant');
+                
+                const result = await OpenRouterModule.sendMessageToOpenRouter(
+                    allMessages,
+                    settings.aiModel,
+                    openRouterApiKey,
+                    settings.temperature,
+                    settings.maxTokens
+                );
+                
+                if (result.success) {
+                    // استریم پاسخ
+                    const reader = result.stream.getReader();
+                    let combinedMessage = '';
+                    
+                    while (true) {
+                        const { done, value } = await reader.read();
+                        if (done) break;
+                        
+                        // تبدیل به متن
+                        const chunk = new TextDecoder().decode(value);
+                        const lines = chunk.split('\n').filter(line => line.trim() !== '');
+                        
+                        for (const line of lines) {
+                            if (line.startsWith('data: ')) {
+                                const data = line.substring(6);
+                                if (data === '[DONE]') continue;
+                                
+                                try {
+                                    const parsed = JSON.parse(data);
+                                    const content = parsed.choices[0]?.delta?.content || '';
+                                    if (content) {
+                                        combinedMessage += content;
+                                        updateStreamMessage(emptyMessageId, combinedMessage);
+                                    }
+                                } catch (error) {
+                                    console.error('خطا در پردازش پاسخ استریم:', error, data);
+                                }
+                            }
+                        }
+                    }
+                    
+                    // اضافه کردن پاسخ کامل به تاریخچه
+                    if (combinedMessage) {
+                        const endTime = new Date();
+                        const responseTime = formatElapsedTime(startTime, endTime);
+                        
+                        // اضافه کردن پاسخ به تاریخچه
+                        chatHistory.push({
+                            role: 'assistant',
+                            content: combinedMessage,
+                            timestamp: endTime.toISOString(),
+                            responseTime: responseTime,
+                            modelInfo: settings.aiModel
+                        });
+                        
+                        // ذخیره تاریخچه چت
+                        saveCurrentChat();
+                    }
+                    
+                    updateConnectionStatus('پاسخ دریافت شد', true);
+                } else {
+                    updateStreamMessage(emptyMessageId, `خطا در دریافت پاسخ: ${result.error}`, true);
+                    updateConnectionStatus(`خطا: ${result.error}`, false, true);
+                }
+            } catch (error) {
+                console.error('خطا در ارسال پیام به OpenRouter:', error);
+                updateConnectionStatus(`خطا: ${error.message}`, false, true);
+            }
+        } else {
+            // استفاده از LM Studio محلی
+            return originalSendMessage(message);
+        }
+    };
+    
+    // به‌روزرسانی تابع loadSettings
+    const originalLoadSettings = loadSettings;
+    loadSettings = function() {
+        originalLoadSettings();
+        
+        // بارگذاری تنظیمات OpenRouter
+        settings.useOpenRouter = localStorage.getItem('useOpenRouter') === 'true';
+        settings.aiModel = localStorage.getItem('selectedAiModel') || '';
+        
+        const openRouterApiKeyInput = document.getElementById('openRouterApiKey');
+        if (openRouterApiKeyInput) {
+            openRouterApiKeyInput.value = localStorage.getItem('openRouterApiKey') || '';
+        }
+        
+        const aiModelSelect = document.getElementById('aiModel');
+        if (aiModelSelect && settings.aiModel) {
+            aiModelSelect.value = settings.aiModel;
+        }
+    };
+    
+    // به‌روزرسانی تابع saveSettings
+    const originalSaveSettings = saveSettings;
+    saveSettings = function() {
+        originalSaveSettings();
+        
+        // ذخیره تنظیمات OpenRouter
+        const openRouterApiKey = document.getElementById('openRouterApiKey').value.trim();
+        const aiModel = document.getElementById('aiModel').value;
+        
+        localStorage.setItem('openRouterApiKey', openRouterApiKey);
+        
+        if (aiModel) {
+            localStorage.setItem('selectedAiModel', aiModel);
+            localStorage.setItem('useOpenRouter', 'true');
+            settings.aiModel = aiModel;
+            settings.useOpenRouter = true;
+        } else {
+            settings.useOpenRouter = false;
+            localStorage.setItem('useOpenRouter', 'false');
+        }
+    };
+    
+    // راه‌اندازی ویژگی OpenRouter در زمان بارگذاری صفحه
+    setupOpenRouterFeature();
+
+    // تابع مدیریت انتخاب نوع هوش مصنوعی
+    function setupAiTypeSelector() {
+        const localAiOption = document.getElementById('localAiOption');
+        const openRouterOption = document.getElementById('openRouterOption');
+        const useLocalAi = document.getElementById('useLocalAi');
+        const useOpenRouter = document.getElementById('useOpenRouter');
+        const apiUrlSection = document.getElementById('apiUrlSection');
+        const openRouterApiKeySection = document.getElementById('openRouterApiKeySection');
+        const modelSelectionGroup = document.getElementById('modelSelectionGroup');
+        
+        // بارگذاری تنظیمات ذخیره شده
+        const useOpenRouterSetting = localStorage.getItem('useOpenRouter') === 'true';
+        settings.useOpenRouter = useOpenRouterSetting;
+        
+        // تنظیم حالت اولیه بر اساس مقدار ذخیره شده
+        if (useOpenRouterSetting) {
+            useOpenRouter.checked = true;
+            openRouterOption.classList.add('active');
+            localAiOption.classList.remove('active');
+            
+            // نمایش بخش‌های مرتبط با OpenRouter
+            openRouterApiKeySection.style.display = 'block';
+            
+            // مدل انتخاب شده باشد، بخش انتخاب مدل نمایش داده شود
+            const savedModel = localStorage.getItem('selectedAiModel');
+            if (savedModel && localStorage.getItem('openRouterApiKey')) {
+                modelSelectionGroup.style.display = 'block';
+            }
+            
+            // کم‌رنگ کردن بخش API محلی
+            apiUrlSection.style.opacity = '0.5';
+            apiUrlSection.style.pointerEvents = 'none';
+        } else {
+            useLocalAi.checked = true;
+            localAiOption.classList.add('active');
+            openRouterOption.classList.remove('active');
+            
+            // مخفی کردن بخش انتخاب مدل
+            modelSelectionGroup.style.display = 'none';
+            
+            // فعال کردن بخش API محلی
+            apiUrlSection.style.opacity = '1';
+            apiUrlSection.style.pointerEvents = 'auto';
+        }
+        
+        // رویداد کلیک برای انتخاب هوش مصنوعی محلی
+        localAiOption.addEventListener('click', function() {
+            useLocalAi.checked = true;
+            localAiOption.classList.add('active');
+            openRouterOption.classList.remove('active');
+            settings.useOpenRouter = false;
+            localStorage.setItem('useOpenRouter', 'false');
+            
+            // فعال کردن بخش API محلی
+            apiUrlSection.style.opacity = '1';
+            apiUrlSection.style.pointerEvents = 'auto';
+            
+            updateConnectionStatus('هوش مصنوعی محلی (LM Studio) انتخاب شد', true, false);
+        });
+        
+        // رویداد کلیک برای انتخاب هوش مصنوعی آنلاین
+        openRouterOption.addEventListener('click', function() {
+            useOpenRouter.checked = true;
+            openRouterOption.classList.add('active');
+            localAiOption.classList.remove('active');
+            settings.useOpenRouter = true;
+            localStorage.setItem('useOpenRouter', 'true');
+            
+            // کم‌رنگ کردن بخش API محلی
+            apiUrlSection.style.opacity = '0.5';
+            apiUrlSection.style.pointerEvents = 'none';
+            
+            // اگر کلید API و مدل انتخاب شده باشند
+            const savedApiKey = localStorage.getItem('openRouterApiKey');
+            const savedModel = localStorage.getItem('selectedAiModel');
+            
+            if (savedApiKey && savedModel) {
+                updateConnectionStatus(`هوش مصنوعی آنلاین با مدل ${savedModel} انتخاب شد`, true, false);
+            } else {
+                updateConnectionStatus('هوش مصنوعی آنلاین انتخاب شد. لطفاً کلید API را وارد کنید', false, false);
+            }
+        });
+        
+        // رویداد تغییر برای رادیو باتن‌ها
+        useLocalAi.addEventListener('change', function() {
+            if (this.checked) {
+                localAiOption.click();
+            }
+        });
+        
+        useOpenRouter.addEventListener('change', function() {
+            if (this.checked) {
+                openRouterOption.click();
+            }
+        });
+    }
+
+    // Load settings
+    loadSettings();
+    
+    // یک تایمر برای بررسی اتصال
+    setTimeout(() => {
+        checkLMStudioConnection();
+    }, 1000);
+    
+    // راه‌اندازی ویژگی OpenRouter در زمان بارگذاری صفحه
+    setupOpenRouterFeature();
+    
+    // راه‌اندازی انتخاب‌گر نوع هوش مصنوعی
+    setupAiTypeSelector();
 });

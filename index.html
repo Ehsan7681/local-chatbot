@@ -7,6 +7,9 @@
     <title>چت بات محلی LM Studio</title>
     <link rel="stylesheet" href="styles.css">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0/css/all.min.css">
+    <link rel="manifest" href="manifest.json">
+    <link rel="icon" type="image/png" href="icons/icon-192x192.png">
+    <link rel="apple-touch-icon" href="icons/icon-192x192.png">
 </head>
 <body>
     <div class="container">
@@ -33,6 +36,9 @@
             </div>
             <div class="chat-messages" id="chatMessages">
                 <!-- پیام‌های چت اینجا نمایش داده می‌شوند -->
+                <button id="scrollToBottomBtn" class="scroll-to-bottom-btn" title="رفتن به پایین گفتگو">
+                    <i class="fas fa-arrow-down"></i>
+                </button>
             </div>
             <div class="chat-input-container">
                 <textarea id="userInput" placeholder="پیام خود را بنویسید..." rows="1"></textarea>
@@ -49,9 +55,22 @@
                 <div class="close-button" id="closeSettingsBtn"><i class="fas fa-times"></i></div>
             </div>
             <div class="settings-content">
-                <div class="setting-group">
+                <div class="setting-group" id="apiUrlSection">
                     <label for="apiUrl">آدرس API (LM Studio):</label>
                     <input type="text" id="apiUrl" value="http://localhost:1234/v1/chat/completions">
+                </div>
+                <div class="setting-group">
+                    <label>نوع هوش مصنوعی:</label>
+                    <div class="ai-type-selector">
+                        <div class="ai-type-option" id="localAiOption">
+                            <input type="radio" id="useLocalAi" name="aiType" value="local" checked>
+                            <label for="useLocalAi">هوش مصنوعی محلی (LM Studio)</label>
+                        </div>
+                        <div class="ai-type-option" id="openRouterOption">
+                            <input type="radio" id="useOpenRouter" name="aiType" value="openrouter">
+                            <label for="useOpenRouter">هوش مصنوعی آنلاین (OpenRouter)</label>
+                        </div>
+                    </div>
                 </div>
                 <div class="setting-group">
                     <label for="temperature">دمای پاسخ‌دهی:</label>
@@ -70,6 +89,19 @@
                         </button>
                     </div>
                     <textarea id="systemPrompt" rows="3">شما یک دستیار مفید، خلاق و دقیق هستید.</textarea>
+                </div>
+                <div class="setting-group" id="openRouterApiKeySection">
+                    <label for="openRouterApiKey">کلید API OpenRouter:</label>
+                    <div class="api-key-container">
+                        <input type="password" id="openRouterApiKey" placeholder="کلید API خود را وارد کنید">
+                        <button id="validateApiKeyBtn" class="btn-secondary">تایید اعتبار</button>
+                    </div>
+                </div>
+                <div class="setting-group" id="modelSelectionGroup" style="display: none;">
+                    <label for="aiModel">مدل هوش مصنوعی:</label>
+                    <select id="aiModel" class="model-select">
+                        <option value="">انتخاب مدل...</option>
+                    </select>
                 </div>
                 <button id="saveSettingsBtn" class="btn-save">ذخیره تنظیمات</button>
                 <button id="testConnectionBtn" class="btn-secondary">تست اتصال API</button>
@@ -113,6 +145,13 @@
                     <p>- دکمه F12 را فشار دهید تا کنسول مرورگر باز شود</p>
                     <p>- خطاها و پیام‌های مربوط به ارتباط با API را مشاهده کنید</p>
                 </div>
+                <div class="help-step">
+                    <p><strong>۶. استفاده از OpenRouter:</strong></p>
+                    <p>- برای استفاده از مدل‌های هوش مصنوعی آنلاین، کلید API خود را از سایت <a href="https://openrouter.ai" target="_blank">OpenRouter</a> دریافت کنید</p>
+                    <p>- کلید API را در بخش تنظیمات وارد کنید و روی «تایید اعتبار» کلیک کنید</p>
+                    <p>- پس از تایید، مدل‌های موجود بارگذاری می‌شوند و می‌توانید یکی را انتخاب کنید</p>
+                    <p>- با ذخیره تنظیمات، چت بات به جای LM Studio از مدل انتخابی استفاده خواهد کرد</p>
+                </div>
                 <button id="testConnectionFromHelp" class="btn-save">تست اتصال API</button>
             </div>
         </div>
@@ -135,5 +174,19 @@
     </div>
 
     <script src="script.js"></script>
+    <script>
+        // ثبت سرویس ورکر
+        if ('serviceWorker' in navigator) {
+            window.addEventListener('load', () => {
+                navigator.serviceWorker.register('service-worker.js')
+                    .then(registration => {
+                        console.log('Service Worker ثبت شد:', registration.scope);
+                    })
+                    .catch(error => {
+                        console.error('خطا در ثبت Service Worker:', error);
+                    });
+            });
+        }
+    </script>
 </body>
 </html> 
